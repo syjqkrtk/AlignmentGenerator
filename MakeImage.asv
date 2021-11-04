@@ -1,0 +1,41 @@
+load('data.mat');
+result = cell(1766,1);
+result2 = cell(1766,1);
+
+for i = 1:1766
+    forward01 = data{i,1,1};
+    forward02 = data{i,1,2};
+    reverse01 = data{i,2,1};
+    reverse02 = data{i,2,2};
+    
+    forward1 = floor(224*forward01/(total(i)+1))+1;
+    forward2 = floor(224*forward02/(total(i)+1))+1;
+    reverse1 = floor(224*reverse01/(total(i)+1))+1;
+    reverse2 = 224-floor(224*reverse02/(total(i)+1));
+    
+    result{i} = zeros(224,224,2);
+    
+    for j = 1:size(forward1,1)
+        result{i}(forward1(j,1),forward2(j,1),1) = result{i}(forward1(j,1),forward2(j,1),1) + 1;
+        result{i}(forward2(j,1),forward1(j,1),1) = result{i}(forward2(j,1),forward1(j,1),1) + 1;
+        result{i}(forward1(j,2),forward2(j,2),1) = result{i}(forward1(j,2),forward2(j,2),1) + 1;
+        result{i}(forward2(j,2),forward1(j,2),1) = result{i}(forward2(j,2),forward1(j,2),1) + 1;
+    end
+        
+    for j = 1:size(reverse1,1)
+        result{i}(reverse1(j,1),reverse2(j,1),2) = result{i}(reverse1(j,1),reverse2(j,1),2) + 1;
+        result{i}(reverse2(j,1),reverse1(j,1),2) = result{i}(reverse2(j,1),reverse1(j,1),2) + 1;
+        result{i}(reverse1(j,2),reverse2(j,2),2) = result{i}(reverse1(j,2),reverse2(j,2),2) + 1;
+        result{i}(reverse2(j,2),reverse1(j,2),2) = result{i}(reverse2(j,2),reverse1(j,2),2) + 1;
+    end
+    
+    disp(i);
+    
+    result2{i} = result{i}/max(max(max(result{i})));
+    img = zeros(64,64,3);
+    img(:,:,3) = 1-result2{i}(:,:,2);
+    img(:,:,2) = 1-(result2{i}(:,:,1)+result2{i}(:,:,2))/2;
+    img(:,:,1) = 1-result2{i}(:,:,1);
+    str = sprintf('MTgenome_%d.jpg',i);
+    imwrite(img,str)
+end
